@@ -1,23 +1,13 @@
-import { service } from "@railway/iac"; // Asegúrate de importar el SDK de Railway
+import { defineRailway, project, service } from "railway/iac";
 
-export const apiService = service("mi-api", {
-  // Configuración de construcción (Build)
-  // Nota: Railpack reemplaza a Nixpacks automáticamente de forma más eficiente
-  builder: "RAILPACK", 
+export default defineRailway(() => {
+  const api = service("mi-api", {
+    start: "uvicorn app_3:app --host 0.0.0.0 --port $PORT",
+    replicas: 1,
+    healthcheck: "/health",
+  });
 
-  // Configuración de despliegue (Deploy)
-  start: "uvicorn app_3:app --host 0.0.0.0 --port $PORT",
-  
-  replicas: 1,
-  
-  healthcheck: {
-    path: "/health",
-    timeoutSeconds: 200,
-  },
-
-  // Políticas de reinicio
-  restartPolicy: {
-    condition: "ON_FAILURE",
-    maxRetries: 1,
-  },
+  return project("sesion-3-v2", {
+    resources: [api],
+  });
 });
